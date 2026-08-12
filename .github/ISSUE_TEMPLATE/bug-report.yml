@@ -5,11 +5,11 @@ labels: ["bug", "needs-triage"]
 body:
   - type: markdown
     attributes:
-      value: Thanks for helping improve VPT. Do not upload private or copyrighted media.
+      value: Thanks for helping improve FrameHarbor. Do not upload private or copyrighted media.
   - type: input
     id: version
     attributes:
-      label: VPT version
+      label: FrameHarbor/VPT build version
       placeholder: v0.1.0-beta.1
     validations:
       required: true

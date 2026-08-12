@@ -1,6 +1,6 @@
 # Security policy
 
-VPT processes untrusted media with locally bundled FFmpeg binaries. Keep VPT and FFmpeg updated, and avoid opening files from sources you do not trust.
+FrameHarbor processes untrusted media with locally bundled FFmpeg binaries. Keep FrameHarbor and FFmpeg updated, and avoid opening files from sources you do not trust.
 
 ## Reporting a vulnerability
 

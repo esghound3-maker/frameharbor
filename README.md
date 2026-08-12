@@ -1,6 +1,8 @@
-# VPT Beta
+# FrameHarbor
 
-VPT is a Windows-first, local video processing tool that puts a friendly interface in front of FFmpeg. Files stay on the computer, original media is never overwritten, and technical codec choices are hidden behind goal-based tools.
+FrameHarbor is a Windows-first, local video processing tool that puts a friendly interface in front of FFmpeg. Files stay on the computer, original media is never overwritten, and technical codec choices are hidden behind goal-based tools.
+
+The current Windows beta was originally packaged as **VPT Beta**, so that name still appears inside the app and installer while the public project transitions to FrameHarbor.
 
 ## Download the Windows beta
 
@@ -92,7 +94,7 @@ The smoke test creates synthetic media, exercises all nine beta workflows, valid
 - Have an idea? Open a [feature request](../../issues/new?template=feature-request.yml).
 - Want to contribute code? Read [CONTRIBUTING.md](CONTRIBUTING.md).
 
-Please include the VPT version, Windows version, input format, and the exact steps needed to reproduce a problem. Do not attach private or copyrighted videos; use a small synthetic sample when possible.
+Please include the FrameHarbor/VPT build version, Windows version, input format, and the exact steps needed to reproduce a problem. Do not attach private or copyrighted videos; use a small synthetic sample when possible.
 
 ## FFmpeg
 
@@ -100,4 +102,4 @@ VPT includes FFmpeg 9.0 Essentials Build for Windows from the provider linked on
 
 ## License
 
-VPT is licensed under the [GNU General Public License v3.0](LICENSE). Third-party components retain their own licenses; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+FrameHarbor is licensed under the [GNU General Public License v3.0](LICENSE). Third-party components retain their own licenses; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

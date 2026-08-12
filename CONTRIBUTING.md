@@ -1,6 +1,6 @@
-# Contributing to VPT
+# Contributing to FrameHarbor
 
-Thanks for helping improve VPT. Bug reports, usability feedback, documentation fixes, and focused pull requests are welcome.
+Thanks for helping improve FrameHarbor. Bug reports, usability feedback, documentation fixes, and focused pull requests are welcome.
 
 ## Before opening an issue
 
@@ -8,7 +8,7 @@ Thanks for helping improve VPT. Bug reports, usability feedback, documentation f
 2. Test the latest beta release.
 3. Remove private information from logs, paths, screenshots, and sample media.
 
-For bugs, include your Windows version, VPT version, input format, expected result, actual result, and exact reproduction steps.
+For bugs, include your Windows version, FrameHarbor/VPT build version, input format, expected result, actual result, and exact reproduction steps.
 
 ## Local development
 
