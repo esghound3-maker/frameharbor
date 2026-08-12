@@ -1,0 +1,77 @@
+name: Bug report
+description: Report a reproducible problem with VPT
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for helping improve VPT. Do not upload private or copyrighted media.
+  - type: input
+    id: version
+    attributes:
+      label: VPT version
+      placeholder: v0.1.0-beta.1
+    validations:
+      required: true
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version
+      placeholder: Windows 11 24H2
+    validations:
+      required: true
+  - type: dropdown
+    id: tool
+    attributes:
+      label: Tool
+      options:
+        - Import / drag and drop
+        - Compress
+        - Convert
+        - Trim / timeline
+        - Merge
+        - Resize / crop / rotate
+        - Audio
+        - Subtitles
+        - Watermark
+        - GIF
+        - Thumbnail
+        - Inspector
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Include the input container/codec and exact actions.
+      placeholder: |
+        1. Open VPT
+        2. Drag an MP4 file...
+        3. Choose Trim...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual result
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: Additional context
+      description: Add sanitized logs or screenshots if useful.
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy check
+      options:
+        - label: I removed private information and did not attach copyrighted media.
+          required: true

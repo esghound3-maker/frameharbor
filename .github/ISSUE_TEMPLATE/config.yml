@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions and general feedback
+    url: https://github.com/esghound3-maker/vpt-beta/discussions
+    about: Use GitHub Discussions for help and open-ended feedback.

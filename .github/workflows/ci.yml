@@ -1,0 +1,30 @@
+name: Quality checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install JavaScript dependencies
+        run: npm ci
+      - name: Download verified FFmpeg build
+        run: npm run setup:ffmpeg
+      - name: Check TypeScript
+        run: npm run check
+      - name: Build frontend
+        run: npm run build
+      - name: Test native command generation
+        run: cargo test --manifest-path src-tauri\Cargo.toml

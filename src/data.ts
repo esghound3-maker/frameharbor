@@ -1,0 +1,98 @@
+import type { ToolDefinition, ToolId } from "./types";
+
+export const tools: ToolDefinition[] = [
+  {
+    id: "compress",
+    title: "Compress",
+    shortDescription: "Reduce file size",
+    description: "Make a video smaller while keeping it clear.",
+    icon: "compress",
+    tone: "violet",
+    category: "Video",
+  },
+  {
+    id: "convert",
+    title: "Convert",
+    shortDescription: "Change any format",
+    description: "Create a device-friendly video or audio file.",
+    icon: "convert",
+    tone: "blue",
+    category: "Video",
+  },
+  {
+    id: "trim",
+    title: "Trim & split",
+    shortDescription: "Cut with precision",
+    description: "Keep the part you want with fast or accurate cutting.",
+    icon: "cut",
+    tone: "mint",
+    category: "Video",
+  },
+  {
+    id: "subtitles",
+    title: "Add subtitles",
+    shortDescription: "Burn or embed",
+    description: "Add an SRT subtitle track or render captions into the picture.",
+    icon: "captions",
+    tone: "coral",
+    category: "Captions",
+  },
+  {
+    id: "merge",
+    title: "Merge clips",
+    shortDescription: "Join videos",
+    description: "Combine selected clips in their current order.",
+    icon: "merge",
+    tone: "violet",
+    category: "Video",
+  },
+  {
+    id: "resize",
+    title: "Resize, crop & flip",
+    shortDescription: "Frame it your way",
+    description: "Resize, freely crop, rotate by any angle, or flip the picture.",
+    icon: "resize",
+    tone: "blue",
+    category: "Video",
+  },
+  {
+    id: "audio",
+    title: "Audio tools",
+    shortDescription: "Extract or improve",
+    description: "Set volume in dB, convert to mono, extract, normalize, or mute.",
+    icon: "audio",
+    tone: "mint",
+    category: "Audio",
+  },
+  {
+    id: "thumbnail",
+    title: "Video thumbnail",
+    shortDescription: "Pick or remove a cover",
+    description: "Pause on a frame, add an image cover, or remove a thumbnail.",
+    icon: "image",
+    tone: "blue",
+    category: "Images",
+  },
+  {
+    id: "watermark",
+    title: "Watermark",
+    shortDescription: "Protect your work",
+    description: "Place a transparent image over a video.",
+    icon: "watermark",
+    tone: "amber",
+    category: "Images",
+  },
+  {
+    id: "gif",
+    title: "Create GIF",
+    shortDescription: "Share a short moment",
+    description: "Turn a clip into an optimized looping GIF.",
+    icon: "image",
+    tone: "coral",
+    category: "Images",
+  },
+];
+
+export const quickToolIds: ToolId[] = ["compress", "convert", "trim", "subtitles"];
+
+export const toolById = (id: ToolId) => tools.find((tool) => tool.id === id)!;

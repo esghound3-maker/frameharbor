@@ -1,0 +1,38 @@
+name: Feature request
+description: Suggest an improvement or new workflow
+title: "[Feature]: "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem should VPT solve?
+      description: Describe the user need before proposing an interface.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: dropdown
+    id: scope
+    attributes:
+      label: Area
+      options:
+        - Import and media management
+        - Timeline and editing
+        - Video processing
+        - Audio processing
+        - Captions and overlays
+        - Batch queue
+        - Advanced Studio
+        - Accessibility
+        - Other
+    validations:
+      required: true
