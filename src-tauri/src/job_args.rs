@@ -177,7 +177,7 @@ fn base_args() -> Vec<String> {
 }
 
 fn create_concat_file(request: &JobRequest) -> Result<PathBuf, String> {
-    let path = std::env::temp_dir().join(format!("vpt-{}.ffconcat", request.id));
+    let path = std::env::temp_dir().join(format!("frameharbor-{}.ffconcat", request.id));
     let mut content = String::from("ffconcat version 1.0\n");
     for input in &request.input_paths {
         let normalized = input.replace('\x5c', "/").replace('\'', "'\x5c\x5c''");
@@ -653,7 +653,7 @@ mod tests {
 
     #[test]
     fn audio_gain_and_mono_are_passed_to_ffmpeg() {
-        let input = std::env::temp_dir().join("vpt-job-args-audio.mp4");
+        let input = std::env::temp_dir().join("frameharbor-job-args-audio.mp4");
         fs::write(&input, b"test").unwrap();
         let mut job = request("audio");
         job.input_paths = vec![input.display().to_string()];
@@ -668,7 +668,7 @@ mod tests {
 
     #[test]
     fn custom_crop_rotation_and_flip_form_one_filter_chain() {
-        let input = std::env::temp_dir().join("vpt-job-args-crop.mp4");
+        let input = std::env::temp_dir().join("frameharbor-job-args-crop.mp4");
         fs::write(&input, b"test").unwrap();
         let mut job = request("resize");
         job.input_paths = vec![input.display().to_string()];

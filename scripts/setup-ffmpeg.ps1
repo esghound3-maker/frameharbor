@@ -17,7 +17,7 @@ if (-not $Force -and (Test-Path -LiteralPath $ffmpegDestination) -and (Test-Path
     exit 0
 }
 
-$temporaryRoot = Join-Path ([System.IO.Path]::GetTempPath()) ('vpt-ffmpeg-' + [guid]::NewGuid().ToString('N'))
+$temporaryRoot = Join-Path ([System.IO.Path]::GetTempPath()) ('frameharbor-ffmpeg-' + [guid]::NewGuid().ToString('N'))
 $archive = Join-Path $temporaryRoot 'ffmpeg.zip'
 $expanded = Join-Path $temporaryRoot 'expanded'
 
@@ -59,7 +59,7 @@ finally {
     $resolvedTemp = [System.IO.Path]::GetFullPath($temporaryRoot)
     $systemTemp = [System.IO.Path]::GetFullPath([System.IO.Path]::GetTempPath())
     if ($resolvedTemp.StartsWith($systemTemp, [System.StringComparison]::OrdinalIgnoreCase) -and
-        (Split-Path -Leaf $resolvedTemp).StartsWith('vpt-ffmpeg-')) {
+        (Split-Path -Leaf $resolvedTemp).StartsWith('frameharbor-ffmpeg-')) {
         Remove-Item -LiteralPath $resolvedTemp -Recurse -Force -ErrorAction SilentlyContinue
     }
 }

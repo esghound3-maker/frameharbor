@@ -1,4 +1,4 @@
-import { Icon, VptMark } from "./Icon";
+import { FrameHarborMark, Icon } from "./Icon";
 import type { IconName, ViewId } from "../types";
 
 interface SidebarProps {
@@ -17,8 +17,9 @@ const primary: Array<{ id: ViewId; label: string; icon: IconName; number: string
 export function Sidebar({ active, onSelect }: SidebarProps) {
   return (
     <aside className="sidebar">
-      <button className="brand" onClick={() => onSelect("home")} aria-label="VPT home">
-        <VptMark size={72} />
+      <button className="brand" onClick={() => onSelect("home")} aria-label="FrameHarbor home">
+        <FrameHarborMark size={72} />
+        <span className="brand-name">FrameHarbor</span>
       </button>
 
       <nav className="sidebar-nav" aria-label="Primary navigation">

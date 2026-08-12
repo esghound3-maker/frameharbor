@@ -272,7 +272,7 @@ fn create_timeline_thumbnails(
     count.hash(&mut hasher);
 
     let output_dir = std::env::temp_dir()
-        .join("vpt-beta")
+        .join("frameharbor")
         .join(format!("timeline-{:016x}", hasher.finish()));
     fs::create_dir_all(&output_dir)
         .map_err(|error| format!("Unable to prepare timeline previews: {error}"))?;

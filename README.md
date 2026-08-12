@@ -2,8 +2,6 @@
 
 FrameHarbor is a Windows-first, local video processing tool that puts a friendly interface in front of FFmpeg. Files stay on the computer, original media is never overwritten, and technical codec choices are hidden behind goal-based tools.
 
-The current Windows beta was originally packaged as **VPT Beta**, so that name still appears inside the app and installer while the public project transitions to FrameHarbor.
-
 ## Download the Windows beta
 
 Open the [latest GitHub Release](../../releases/latest) and download the file ending in `Setup.exe`.
@@ -55,7 +53,7 @@ npm run tauri build
 If the C: drive is tight on space, point Rust's disposable build output at another drive before building:
 
 ```powershell
-$env:CARGO_TARGET_DIR = 'D:\VPT-Build-Cache'
+$env:CARGO_TARGET_DIR = 'D:\FrameHarbor-Build-Cache'
 npm run tauri build
 ```
 
@@ -74,7 +72,7 @@ The smoke test creates synthetic media, exercises all nine beta workflows, valid
 ## Project structure
 
 - `src/` - React interface and queue orchestration
-- `src/styles/` - the VPT visual system
+- `src/styles/` - the FrameHarbor visual system
 - `src-tauri/src/` - Rust FFmpeg discovery, inspection, command generation, progress, and cancellation
 - `src-tauri/binaries/` - bundled FFmpeg 9.0 tools and license
 - `scripts/smoke-test.ps1` - repeatable end-to-end FFmpeg verification
@@ -84,9 +82,9 @@ The smoke test creates synthetic media, exercises all nine beta workflows, valid
 
 - Windows is the tested platform for 0.1.
 - Merge works best when clips have matching dimensions and frame rates.
-- Closing VPT stops an active job.
+- Closing FrameHarbor stops an active job.
 - Studio is a visual preview and does not execute node workflows yet.
-- VPT contains no accounts, uploads, cloud processing, or telemetry.
+- FrameHarbor contains no accounts, uploads, cloud processing, or telemetry.
 
 ## Feedback and contributions
 
@@ -94,11 +92,11 @@ The smoke test creates synthetic media, exercises all nine beta workflows, valid
 - Have an idea? Open a [feature request](../../issues/new?template=feature-request.yml).
 - Want to contribute code? Read [CONTRIBUTING.md](CONTRIBUTING.md).
 
-Please include the FrameHarbor/VPT build version, Windows version, input format, and the exact steps needed to reproduce a problem. Do not attach private or copyrighted videos; use a small synthetic sample when possible.
+Please include the FrameHarbor version, Windows version, input format, and the exact steps needed to reproduce a problem. Do not attach private or copyrighted videos; use a small synthetic sample when possible.
 
 ## FFmpeg
 
-VPT includes FFmpeg 9.0 Essentials Build for Windows from the provider linked on the official FFmpeg download page. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and `src-tauri/binaries/LICENSE-FFMPEG.txt`.
+FrameHarbor includes FFmpeg 9.0 Essentials Build for Windows from the provider linked on the official FFmpeg download page. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and `src-tauri/binaries/LICENSE-FFMPEG.txt`.
 
 ## License
 

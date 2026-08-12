@@ -19,5 +19,5 @@ pub fn run() {
             runner::cancel_job
         ])
         .run(tauri::generate_context!())
-        .expect("error while running VPT");
+        .expect("error while running FrameHarbor");
 }

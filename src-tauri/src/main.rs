@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    vpt_beta_lib::run()
+    frameharbor_lib::run()
 }

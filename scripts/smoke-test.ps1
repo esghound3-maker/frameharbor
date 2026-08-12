@@ -5,9 +5,9 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $smokeRoot = if (Test-Path -LiteralPath 'D:\') {
-    'D:\VPT-Smoke'
+    'D:\FrameHarbor-Smoke'
 } else {
-    Join-Path ([System.IO.Path]::GetTempPath()) 'VPT-Smoke'
+    Join-Path ([System.IO.Path]::GetTempPath()) 'FrameHarbor-Smoke'
 }
 $runRoot = Join-Path $smokeRoot "run-$PID"
 
@@ -60,7 +60,7 @@ try {
     $subtitleText = @(
         '1',
         '00:00:00,400 --> 00:00:02,800',
-        'VPT local processing',
+        'FrameHarbor local processing',
         ''
     )
     Set-Content -LiteralPath $subtitle -Value $subtitleText -Encoding UTF8
@@ -133,7 +133,7 @@ try {
     }
 
     $results | Format-Table -AutoSize
-    Write-Host "VPT smoke test passed: $($results.Count) outputs validated."
+    Write-Host "FrameHarbor smoke test passed: $($results.Count) outputs validated."
 } finally {
     $resolvedRun = [System.IO.Path]::GetFullPath($runRoot)
     $resolvedRoot = [System.IO.Path]::GetFullPath($smokeRoot)

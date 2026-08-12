@@ -89,7 +89,7 @@ export function Icon({ name, size = 20, strokeWidth = 1.8 }: IconProps) {
   }
 }
 
-export function VptMark({ size = 42 }: { size?: number }) {
+export function FrameHarborMark({ size = 42 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 48 48" aria-hidden="true">
       <defs>

@@ -51,7 +51,7 @@ const defaultSettings: AppSettings = {
 
 function loadSettings(): AppSettings {
   try {
-    const saved = localStorage.getItem("vpt-settings");
+    const saved = localStorage.getItem("frameharbor-settings") ?? localStorage.getItem("vpt-settings");
     return saved ? { ...defaultSettings, ...JSON.parse(saved) } : defaultSettings;
   } catch {
     return defaultSettings;
@@ -60,7 +60,7 @@ function loadSettings(): AppSettings {
 
 function makeId() {
   return globalThis.crypto?.randomUUID?.() ??
-    `vpt-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    `frameharbor-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
 function errorMessage(error: unknown) {
@@ -92,7 +92,8 @@ function App() {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("vpt-settings", JSON.stringify(settings));
+    localStorage.setItem("frameharbor-settings", JSON.stringify(settings));
+    localStorage.removeItem("vpt-settings");
   }, [settings]);
 
   useEffect(() => {
@@ -309,7 +310,7 @@ function App() {
 
   const chooseOutput = useCallback(async () => {
     if (!desktopRuntime) {
-      setSettings((current) => ({ ...current, outputDir: "C:\\Videos\\VPT Exports" }));
+      setSettings((current) => ({ ...current, outputDir: "C:\\Videos\\FrameHarbor Exports" }));
       showToast("Preview output folder selected.");
       return;
     }

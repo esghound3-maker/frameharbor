@@ -36,7 +36,7 @@ export function AllToolsPage({
         <div>
           <span className="eyebrow">Goal-based, not codec-based</span>
           <h2>What would you like to do?</h2>
-          <p>Choose a task. VPT picks safe FFmpeg settings and keeps the advanced details out of the way.</p>
+          <p>Choose a task. FrameHarbor picks safe FFmpeg settings and keeps the advanced details out of the way.</p>
         </div>
         <span className="result-count">{visible.length} tools</span>
       </section>
@@ -97,7 +97,7 @@ export function BatchPage({
         <div>
           <span className="eyebrow">One job at a time</span>
           <h2>{activeCount ? `${activeCount} remaining` : "All jobs finished"}</h2>
-          <p>Closing VPT will stop active processing.</p>
+          <p>Closing FrameHarbor will stop active processing.</p>
         </div>
         {hasFinished && (
           <button className="ghost-button" onClick={onClearFinished}>
@@ -164,7 +164,7 @@ export function InspectorPage({
         <EmptyState
           icon="search"
           title="Choose media to inspect"
-          message="VPT will reveal formats, codecs, resolution, frame rate, audio, bitrate, and duration."
+          message="FrameHarbor will reveal formats, codecs, resolution, frame rate, audio, bitrate, and duration."
           action="Choose media"
           onAction={onChooseFiles}
         />
@@ -273,7 +273,7 @@ export function SettingsPage({
           </span>
           <div>
             <h2>{previewMode ? "Browser interface preview" : engineReady ? "FFmpeg is ready" : "FFmpeg needs attention"}</h2>
-            <p>{previewMode ? "Open the Tauri desktop app to process real files." : environment.ffmpegVersion ?? "VPT could not find its local media engine."}</p>
+            <p>{previewMode ? "Open the Tauri desktop app to process real files." : environment.ffmpegVersion ?? "FrameHarbor could not find its local media engine."}</p>
           </div>
         </div>
         <dl className="engine-details">

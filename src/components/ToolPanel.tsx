@@ -320,7 +320,7 @@ export function ToolPanel({
             {toolId === "gif" && (
               <div className="info-note">
                 <Icon name="image" size={18} />
-                VPT creates a 720-pixel-wide, 12 fps looping GIF with an optimized color palette.
+                FrameHarbor creates a 720-pixel-wide, 12 fps looping GIF with an optimized color palette.
               </div>
             )}
           </section>
@@ -329,7 +329,7 @@ export function ToolPanel({
             <Icon name="shield" size={18} />
             <div>
               <strong>Your original stays untouched</strong>
-              <span>VPT creates a uniquely named output beside the source or in your chosen folder.</span>
+              <span>FrameHarbor creates a uniquely named output beside the source or in your chosen folder.</span>
             </div>
           </section>
         </div>

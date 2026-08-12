@@ -20,6 +20,6 @@ The bundled build reports that it was configured with GPL and GPLv3 components. 
 
 `src-tauri/binaries/LICENSE-FFMPEG.txt`
 
-Anyone redistributing VPT with these binaries is responsible for complying with the applicable FFmpeg and third-party library licenses, including corresponding-source obligations where required.
+Anyone redistributing FrameHarbor with these binaries is responsible for complying with the applicable FFmpeg and third-party library licenses, including corresponding-source obligations where required.
 
 FFmpeg is a trademark of Fabrice Bellard, originator of the FFmpeg project. This project is not affiliated with or endorsed by the FFmpeg project.
