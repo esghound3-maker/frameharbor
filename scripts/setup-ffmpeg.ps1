@@ -26,7 +26,19 @@ try {
     Write-Host 'Downloading the pinned FFmpeg 9.0 Essentials build...'
     Invoke-WebRequest -Uri $releaseUrl -OutFile $archive
 
-    $actualHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $archive).Hash
+    $archiveStream = [System.IO.File]::OpenRead($archive)
+    try {
+        $sha256 = [System.Security.Cryptography.SHA256]::Create()
+        try {
+            $actualHash = ([System.BitConverter]::ToString($sha256.ComputeHash($archiveStream))).Replace('-', '')
+        }
+        finally {
+            $sha256.Dispose()
+        }
+    }
+    finally {
+        $archiveStream.Dispose()
+    }
     if ($actualHash -ne $archiveSha256) {
         throw "FFmpeg archive checksum mismatch. Expected $archiveSha256 but received $actualHash."
     }
