@@ -51,7 +51,19 @@ pub(crate) struct JobRequest {
     pub(crate) output_dir: Option<String>,
     pub(crate) duration_seconds: Option<f64>,
     #[serde(default)]
+    pub(crate) merge_inputs: Vec<MergeInputInfo>,
+    #[serde(default)]
     pub(crate) options: JobOptions,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct MergeInputInfo {
+    pub(crate) width: Option<u64>,
+    pub(crate) height: Option<u64>,
+    pub(crate) frame_rate: Option<f64>,
+    pub(crate) duration_seconds: f64,
+    pub(crate) has_audio: bool,
 }
 
 #[derive(Debug, Clone, Default, Deserialize)]

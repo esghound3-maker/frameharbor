@@ -343,6 +343,16 @@ function App() {
             tool === "merge"
               ? media.reduce((sum, item) => sum + item.durationSeconds, 0)
               : file.durationSeconds,
+          mergeInputs:
+            tool === "merge"
+              ? media.map((item) => ({
+                  width: item.width,
+                  height: item.height,
+                  frameRate: item.frameRate,
+                  durationSeconds: item.durationSeconds,
+                  hasAudio: Boolean(item.audioCodec),
+                }))
+              : undefined,
           options: {
             ...options,
             videoEncoder: encoder,

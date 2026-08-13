@@ -109,12 +109,21 @@ export interface ToolOptions {
   keepMetadata?: boolean;
 }
 
+export interface MergeInputInfo {
+  width?: number | null;
+  height?: number | null;
+  frameRate?: number | null;
+  durationSeconds: number;
+  hasAudio: boolean;
+}
+
 export interface JobRequest {
   id: string;
   tool: ToolId;
   inputPaths: string[];
   outputDir?: string | null;
   durationSeconds?: number;
+  mergeInputs?: MergeInputInfo[];
   options: ToolOptions;
 }
 

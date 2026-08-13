@@ -1,4 +1,4 @@
-use crate::models::{JobOptions, JobRequest};
+use crate::models::{JobOptions, JobRequest, MergeInputInfo};
 use std::{
     fs,
     path::{Path, PathBuf},
@@ -176,15 +176,88 @@ fn base_args() -> Vec<String> {
     .collect()
 }
 
-fn create_concat_file(request: &JobRequest) -> Result<PathBuf, String> {
-    let path = std::env::temp_dir().join(format!("frameharbor-{}.ffconcat", request.id));
-    let mut content = String::from("ffconcat version 1.0\n");
-    for input in &request.input_paths {
-        let normalized = input.replace('\x5c', "/").replace('\'', "'\x5c\x5c''");
-        content.push_str(&format!("file '{normalized}'\n"));
+fn merge_dimension(value: Option<u64>, fallback: u64) -> u64 {
+    let value = value.unwrap_or(fallback).clamp(2, 8192);
+    value + (value % 2)
+}
+
+fn merge_frame_rate(value: Option<f64>) -> f64 {
+    value
+        .filter(|rate| rate.is_finite() && (1.0..=240.0).contains(rate))
+        .unwrap_or(30.0)
+}
+
+fn merge_metadata(request: &JobRequest) -> Result<&[MergeInputInfo], String> {
+    if request.merge_inputs.len() != request.input_paths.len() {
+        return Err(
+            "Could not read all clip details. Remove the clips and add them again.".to_string(),
+        );
     }
-    fs::write(&path, content).map_err(|error| format!("Could not prepare merge: {error}"))?;
-    Ok(path)
+    if request
+        .merge_inputs
+        .iter()
+        .any(|item| item.width.is_none() || item.height.is_none())
+    {
+        return Err(
+            "Merge currently supports video clips. One selected file has no video stream."
+                .to_string(),
+        );
+    }
+    Ok(&request.merge_inputs)
+}
+
+fn add_merge_args(args: &mut Vec<String>, request: &JobRequest) -> Result<(), String> {
+    let metadata = merge_metadata(request)?;
+    let width = merge_dimension(metadata[0].width, 1920);
+    let height = merge_dimension(metadata[0].height, 1080);
+    let frame_rate = merge_frame_rate(metadata[0].frame_rate);
+    let has_audio = metadata.iter().any(|item| item.has_audio);
+
+    for input in &request.input_paths {
+        args.extend(["-i".into(), input.clone()]);
+    }
+
+    let mut filters = Vec::new();
+    let mut concat_inputs = String::new();
+    for (index, item) in metadata.iter().enumerate() {
+        filters.push(format!(
+            "[{index}:v:0]settb=AVTB,setpts=PTS-STARTPTS,scale={width}:{height}:force_original_aspect_ratio=decrease:force_divisible_by=2,pad={width}:{height}:(ow-iw)/2:(oh-ih)/2,setsar=1,fps={frame_rate:.6},format=yuv420p[v{index}]"
+        ));
+        concat_inputs.push_str(&format!("[v{index}]"));
+
+        if has_audio {
+            if item.has_audio {
+                filters.push(format!(
+                    "[{index}:a:0]aresample=48000:async=1:first_pts=0,aformat=sample_fmts=fltp:sample_rates=48000:channel_layouts=stereo,asetpts=PTS-STARTPTS[a{index}]"
+                ));
+            } else {
+                if !item.duration_seconds.is_finite() || item.duration_seconds <= 0.0 {
+                    return Err(format!(
+                        "Could not determine the duration of clip {}.",
+                        index + 1
+                    ));
+                }
+                filters.push(format!(
+                    "anullsrc=r=48000:cl=stereo,atrim=duration={:.6},asetpts=PTS-STARTPTS[a{index}]",
+                    item.duration_seconds
+                ));
+            }
+            concat_inputs.push_str(&format!("[a{index}]"));
+        }
+    }
+
+    filters.push(format!(
+        "{concat_inputs}concat=n={}:v=1:a={}[v]{}",
+        request.input_paths.len(),
+        usize::from(has_audio),
+        if has_audio { "[a]" } else { "" }
+    ));
+    args.extend(["-filter_complex".into(), filters.join(";")]);
+    args.extend(["-map".into(), "[v]".into()]);
+    if has_audio {
+        args.extend(["-map".into(), "[a]".into()]);
+    }
+    Ok(())
 }
 
 pub(crate) fn build_job_args(
@@ -202,7 +275,7 @@ pub(crate) fn build_job_args(
 
     let input = &request.input_paths[0];
     let mut args = base_args();
-    let mut temporary_files = Vec::new();
+    let temporary_files = Vec::new();
 
     match request.tool.as_str() {
         "compress" => {
@@ -285,23 +358,14 @@ pub(crate) fn build_job_args(
             if request.input_paths.len() < 2 {
                 return Err("Choose at least two files to merge.".to_string());
             }
-            let concat_file = create_concat_file(request)?;
-            temporary_files.push(concat_file.clone());
-            args.extend([
-                "-f".into(),
-                "concat".into(),
-                "-safe".into(),
-                "0".into(),
-                "-i".into(),
-                concat_file.display().to_string(),
-            ]);
+            add_merge_args(&mut args, request)?;
             add_h264_encoding(&mut args, &request.options);
-            args.extend([
-                "-c:a".into(),
-                "aac".into(),
-                "-movflags".into(),
-                "+faststart".into(),
-            ]);
+            if request.merge_inputs.iter().any(|item| item.has_audio) {
+                args.extend(["-c:a".into(), "aac".into(), "-b:a".into(), "192k".into()]);
+            } else {
+                args.push("-an".into());
+            }
+            args.extend(["-movflags".into(), "+faststart".into()]);
         }
         "resize" => {
             let mut filters = Vec::new();
@@ -611,6 +675,7 @@ mod tests {
             input_paths: vec!["input.mp4".to_string()],
             output_dir: None,
             duration_seconds: Some(10.0),
+            merge_inputs: Vec::new(),
             options: JobOptions::default(),
         }
     }
@@ -649,6 +714,51 @@ mod tests {
     fn resolution_values_are_constrained() {
         assert_eq!(parse_resolution("1280x720"), (1280, 720));
         assert_eq!(parse_resolution("anything"), (1920, 1080));
+    }
+
+    #[test]
+    fn merge_normalizes_timestamps_streams_and_canvas() {
+        let first = std::env::temp_dir().join("frameharbor-job-args-merge-one.mp4");
+        let second = std::env::temp_dir().join("frameharbor-job-args-merge-two.mp4");
+        fs::write(&first, b"test").unwrap();
+        fs::write(&second, b"test").unwrap();
+        let mut job = request("merge");
+        job.input_paths = vec![first.display().to_string(), second.display().to_string()];
+        job.merge_inputs = vec![
+            MergeInputInfo {
+                width: Some(853),
+                height: Some(480),
+                frame_rate: Some(30.0),
+                duration_seconds: 10.0,
+                has_audio: true,
+            },
+            MergeInputInfo {
+                width: Some(720),
+                height: Some(720),
+                frame_rate: Some(25.0),
+                duration_seconds: 8.0,
+                has_audio: false,
+            },
+        ];
+
+        let (args, temporary_files) =
+            build_job_args(&job, &first.with_file_name("merge-out.mp4")).unwrap();
+        let filter = &args[args
+            .iter()
+            .position(|value| value == "-filter_complex")
+            .unwrap()
+            + 1];
+        assert!(temporary_files.is_empty());
+        assert_eq!(args.iter().filter(|value| *value == "-i").count(), 2);
+        assert!(filter.contains("settb=AVTB,setpts=PTS-STARTPTS"));
+        assert!(filter.contains("scale=854:480"));
+        assert!(filter.contains("fps=30.000000"));
+        assert!(filter.contains("anullsrc=r=48000:cl=stereo,atrim=duration=8.000000"));
+        assert!(filter.contains("[v0][a0][v1][a1]concat=n=2:v=1:a=1[v][a]"));
+        assert!(args.windows(2).any(|pair| pair == ["-map", "[v]"]));
+        assert!(args.windows(2).any(|pair| pair == ["-map", "[a]"]));
+        let _ = fs::remove_file(first);
+        let _ = fs::remove_file(second);
     }
 
     #[test]
