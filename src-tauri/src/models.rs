@@ -50,6 +50,7 @@ pub(crate) struct JobRequest {
     pub(crate) input_paths: Vec<String>,
     pub(crate) output_dir: Option<String>,
     pub(crate) duration_seconds: Option<f64>,
+    pub(crate) input_has_audio: Option<bool>,
     #[serde(default)]
     pub(crate) merge_inputs: Vec<MergeInputInfo>,
     #[serde(default)]
@@ -95,6 +96,25 @@ pub(crate) struct JobOptions {
     pub(crate) watermark_position: Option<String>,
     pub(crate) video_encoder: Option<String>,
     pub(crate) keep_metadata: Option<bool>,
+    pub(crate) studio_container: Option<String>,
+    pub(crate) studio_video_codec: Option<String>,
+    pub(crate) studio_preset: Option<String>,
+    pub(crate) studio_crf: Option<String>,
+    pub(crate) studio_resolution: Option<String>,
+    pub(crate) studio_frame_rate: Option<String>,
+    pub(crate) studio_speed: Option<String>,
+    pub(crate) studio_deinterlace: Option<bool>,
+    pub(crate) studio_denoise: Option<String>,
+    pub(crate) studio_sharpen: Option<bool>,
+    pub(crate) studio_brightness: Option<String>,
+    pub(crate) studio_contrast: Option<String>,
+    pub(crate) studio_saturation: Option<String>,
+    pub(crate) studio_audio_codec: Option<String>,
+    pub(crate) studio_normalize: Option<bool>,
+    pub(crate) studio_audio_gain: Option<String>,
+    pub(crate) studio_sample_rate: Option<String>,
+    pub(crate) studio_channels: Option<String>,
+    pub(crate) studio_fast_start: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize)]

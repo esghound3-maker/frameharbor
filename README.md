@@ -2,13 +2,13 @@
 
 FrameHarbor is a Windows-first, local video processing tool that puts a friendly interface in front of FFmpeg. Files stay on the computer, original media is never overwritten, and technical codec choices are hidden behind goal-based tools.
 
-## Download the Windows beta
+## Download for Windows
 
 Open the [latest GitHub Release](../../releases/latest) and download the file ending in `Setup.exe`.
 
-Windows SmartScreen may show an "Unknown publisher" warning because this community beta is not code-signed yet. The app works entirely on your computer and does not upload media.
+Windows SmartScreen may show an "Unknown publisher" warning because this community release is not code-signed yet. The app works entirely on your computer and does not upload media.
 
-## Beta features
+## Features
 
 - Import video and audio by browsing or native Windows drag and drop
 - Preview the original video on a thumbnail timeline with scrubbing and trim handles
@@ -22,10 +22,11 @@ Windows SmartScreen may show an "Unknown publisher" warning because this communi
 - Burn or embed subtitle files
 - Add image watermarks
 - Create optimized looping GIFs
+- Build advanced Studio exports with chained picture, timing, audio, and codec controls
 - Queue multiple local jobs with progress, cancellation, and retry-safe output naming
 - Detect NVIDIA, Intel, or AMD H.264 hardware encoders and fall back to CPU encoding
 
-Advanced Studio is intentionally a post-beta preview. The beta focuses on dependable everyday processing rather than timeline editing.
+Advanced Studio supports validated FFmpeg pipelines for H.264, HEVC, VP9, and AV1 output. It includes scaling, frame-rate conversion, speed changes, deinterlacing, denoise, sharpening, color adjustment, loudness normalization, gain, resampling, channel conversion, and stream copy or mute controls.
 
 ## Run the desktop app from source
 
@@ -67,7 +68,7 @@ cargo clippy --manifest-path src-tauri\Cargo.toml --all-targets -- -D warnings
 powershell -ExecutionPolicy Bypass -File .\scripts\smoke-test.ps1
 ```
 
-The smoke test creates synthetic media, exercises all nine beta workflows, validates every output with ffprobe, and removes its temporary files.
+The smoke test creates synthetic media, exercises the core export workflows including Advanced Studio, validates every output with ffprobe, and removes its temporary files.
 
 ## Project structure
 
@@ -76,14 +77,14 @@ The smoke test creates synthetic media, exercises all nine beta workflows, valid
 - `src-tauri/src/` - Rust FFmpeg discovery, inspection, command generation, progress, and cancellation
 - `src-tauri/binaries/` - bundled FFmpeg 9.0 tools and license
 - `scripts/smoke-test.ps1` - repeatable end-to-end FFmpeg verification
-- `release/` - packaged Windows beta installer, when built
+- `release/` - packaged Windows installer and checksum, when built
 
-## Beta boundaries
+## Current boundaries
 
-- Windows is the tested platform for 0.1.
+- Windows is the tested platform for 0.2.
 - Merge works best when clips have matching dimensions and frame rates.
 - Closing FrameHarbor stops an active job.
-- Studio is a visual preview and does not execute node workflows yet.
+- Studio processes each selected file with the same configured pipeline.
 - FrameHarbor contains no accounts, uploads, cloud processing, or telemetry.
 
 ## Feedback and contributions

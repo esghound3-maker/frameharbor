@@ -10,7 +10,8 @@ export type ToolId =
   | "subtitles"
   | "watermark"
   | "gif"
-  | "thumbnail";
+  | "thumbnail"
+  | "studio";
 
 export type IconName =
   | "home"
@@ -107,6 +108,25 @@ export interface ToolOptions {
   watermarkPosition?: string;
   videoEncoder?: string;
   keepMetadata?: boolean;
+  studioContainer?: string;
+  studioVideoCodec?: string;
+  studioPreset?: string;
+  studioCrf?: string;
+  studioResolution?: string;
+  studioFrameRate?: string;
+  studioSpeed?: string;
+  studioDeinterlace?: boolean;
+  studioDenoise?: string;
+  studioSharpen?: boolean;
+  studioBrightness?: string;
+  studioContrast?: string;
+  studioSaturation?: string;
+  studioAudioCodec?: string;
+  studioNormalize?: boolean;
+  studioAudioGain?: string;
+  studioSampleRate?: string;
+  studioChannels?: string;
+  studioFastStart?: boolean;
 }
 
 export interface MergeInputInfo {
@@ -123,6 +143,7 @@ export interface JobRequest {
   inputPaths: string[];
   outputDir?: string | null;
   durationSeconds?: number;
+  inputHasAudio?: boolean;
   mergeInputs?: MergeInputInfo[];
   options: ToolOptions;
 }

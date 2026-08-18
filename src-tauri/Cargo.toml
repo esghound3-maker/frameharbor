@@ -1,6 +1,6 @@
 [package]
 name = "frameharbor"
-version = "0.1.0-beta.2"
+version = "0.2.0"
 description = "A friendly, local-first FFmpeg desktop application"
 authors = ["FrameHarbor"]
 edition = "2021"

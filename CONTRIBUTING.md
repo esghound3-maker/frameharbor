@@ -5,7 +5,7 @@ Thanks for helping improve FrameHarbor. Bug reports, usability feedback, documen
 ## Before opening an issue
 
 1. Check existing issues for the same problem or idea.
-2. Test the latest beta release.
+2. Test the latest release.
 3. Remove private information from logs, paths, screenshots, and sample media.
 
 For bugs, include your Windows version, FrameHarbor version, input format, expected result, actual result, and exact reproduction steps.

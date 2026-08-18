@@ -26,6 +26,7 @@ const defaults: Record<ToolId, ToolOptions> = {
   watermark: { watermarkPosition: "bottom-right", quality: "balanced", auxiliaryPath: "" },
   gif: {},
   thumbnail: { thumbnailAction: "save-frame", thumbnailTime: "0.000", auxiliaryPath: "" },
+  studio: {},
 };
 
 export function ToolPanel({
@@ -174,7 +175,7 @@ export function ToolPanel({
             {toolId === "merge" && (
               <div className="info-note">
                 <Icon name="merge" size={18} />
-                Clips are joined in the order shown. Matching dimensions and frame rates give the most reliable beta results.
+                Clips are joined in the order shown. Matching dimensions and frame rates give the most reliable results.
               </div>
             )}
 

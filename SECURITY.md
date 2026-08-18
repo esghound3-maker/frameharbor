@@ -6,4 +6,4 @@ FrameHarbor processes untrusted media with locally bundled FFmpeg binaries. Keep
 
 Please do not disclose a suspected security vulnerability in a public issue. Use GitHub's private vulnerability reporting feature on the Security tab of this repository. Include reproduction steps, affected versions, and impact.
 
-Beta releases receive security fixes on a best-effort basis. Only the latest published beta is supported.
+Releases receive security fixes on a best-effort basis. Only the latest published release is supported.

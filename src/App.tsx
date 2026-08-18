@@ -25,8 +25,8 @@ import {
   BatchPage,
   InspectorPage,
   SettingsPage,
-  StudioPage,
 } from "./components/Pages";
+import { StudioPage } from "./components/StudioPage";
 import { Sidebar } from "./components/Sidebar";
 import { ToolPanel } from "./components/ToolPanel";
 import { Topbar } from "./components/Topbar";
@@ -321,17 +321,28 @@ function App() {
   }, [showToast]);
 
   const openTool = useCallback((tool: ToolId) => {
+    if (tool === "studio") {
+      setView("studio");
+      return;
+    }
     setActiveTool(tool);
   }, []);
 
   const enqueue = useCallback(
     (tool: ToolId, options: ToolOptions) => {
-      const definition = toolById(tool);
+      const definition = tool === "studio" ? null : toolById(tool);
       const encoder =
-        settings.encoding === "auto" && environment.hardwareEncoder
+        tool === "studio" && options.studioVideoCodec !== "h264"
+          ? "libx264"
+          : settings.encoding === "auto" && environment.hardwareEncoder
           ? environment.hardwareEncoder
           : "libx264";
-      const targets = tool === "merge" ? [media[0]] : media;
+      const targets =
+        tool === "merge"
+          ? [media[0]]
+          : tool === "studio"
+            ? media.filter((item) => Boolean(item.videoCodec))
+            : media;
       const newJobs: ProcessingJob[] = targets.map((file) => {
         const id = makeId();
         const request: JobRequest = {
@@ -342,7 +353,10 @@ function App() {
           durationSeconds:
             tool === "merge"
               ? media.reduce((sum, item) => sum + item.durationSeconds, 0)
-              : file.durationSeconds,
+              : tool === "studio"
+                ? file.durationSeconds / Number(options.studioSpeed || "1")
+                : file.durationSeconds,
+          inputHasAudio: Boolean(file.audioCodec),
           mergeInputs:
             tool === "merge"
               ? media.map((item) => ({
@@ -361,7 +375,7 @@ function App() {
         };
         return {
           id,
-          title: definition.title,
+          title: definition?.title ?? "Advanced Studio",
           sourceName: tool === "merge" ? `${media.length} clips` : file.name,
           tool,
           status: "queued",
@@ -535,7 +549,13 @@ function App() {
           />
         );
       case "studio":
-        return <StudioPage onBack={() => setView("home")} />;
+        return (
+          <StudioPage
+            media={media.filter((item) => Boolean(item.videoCodec))}
+            onChooseFiles={chooseFiles}
+            onSubmit={(options) => enqueue("studio", options)}
+          />
+        );
       case "settings":
         return (
           <SettingsPage

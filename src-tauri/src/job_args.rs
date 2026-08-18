@@ -30,6 +30,11 @@ fn output_extension(request: &JobRequest) -> &'static str {
         "thumbnail" if option(&request.options.thumbnail_action, "save-frame") == "save-frame" => {
             "jpg"
         }
+        "studio" => match option(&request.options.studio_container, "mp4") {
+            "mkv" => "mkv",
+            "webm" => "webm",
+            _ => "mp4",
+        },
         "gif" => "gif",
         _ => "mp4",
     }
@@ -47,6 +52,7 @@ fn safe_tool_slug(tool: &str) -> &str {
         "watermark" => "watermarked",
         "gif" => "clip",
         "thumbnail" => "thumbnail",
+        "studio" => "studio",
         _ => "processed",
     }
 }
@@ -140,6 +146,290 @@ fn add_h264_encoding(args: &mut Vec<String>, options: &JobOptions) {
             quality.into(),
         ]),
     }
+}
+
+fn bounded_number(
+    value: &Option<String>,
+    fallback: &str,
+    minimum: f64,
+    maximum: f64,
+    label: &str,
+) -> Result<f64, String> {
+    let parsed = option(value, fallback)
+        .parse::<f64>()
+        .map_err(|_| format!("Choose a valid {label}."))?;
+    if !parsed.is_finite() || !(minimum..=maximum).contains(&parsed) {
+        return Err(format!("{label} must be between {minimum} and {maximum}."));
+    }
+    Ok(parsed)
+}
+
+fn add_studio_h264_encoding(args: &mut Vec<String>, options: &JobOptions, crf: u8, effort: &str) {
+    let encoder = encoder_name(options);
+    args.extend(["-c:v".into(), encoder.into()]);
+    match encoder {
+        "h264_nvenc" => args.extend([
+            "-preset".into(),
+            match effort {
+                "fast" => "p3",
+                "quality" => "p7",
+                _ => "p5",
+            }
+            .into(),
+            "-cq".into(),
+            crf.to_string(),
+            "-b:v".into(),
+            "0".into(),
+        ]),
+        "h264_qsv" => args.extend([
+            "-preset".into(),
+            match effort {
+                "fast" => "fast",
+                "quality" => "slower",
+                _ => "medium",
+            }
+            .into(),
+            "-global_quality".into(),
+            crf.to_string(),
+        ]),
+        "h264_amf" => args.extend([
+            "-quality".into(),
+            match effort {
+                "fast" => "speed",
+                "quality" => "quality",
+                _ => "balanced",
+            }
+            .into(),
+            "-rc".into(),
+            "cqp".into(),
+            "-qp_i".into(),
+            crf.to_string(),
+            "-qp_p".into(),
+            crf.to_string(),
+        ]),
+        _ => args.extend([
+            "-preset".into(),
+            match effort {
+                "fast" => "fast",
+                "quality" => "slow",
+                _ => "medium",
+            }
+            .into(),
+            "-crf".into(),
+            crf.to_string(),
+        ]),
+    }
+}
+
+fn add_studio_args(
+    args: &mut Vec<String>,
+    request: &JobRequest,
+    input: &str,
+) -> Result<(), String> {
+    let options = &request.options;
+    let container = option(&options.studio_container, "mp4");
+    if !matches!(container, "mp4" | "mkv" | "webm") {
+        return Err("Choose MP4, Matroska, or WebM output.".to_string());
+    }
+    let video_codec = option(&options.studio_video_codec, "h264");
+    if !matches!(video_codec, "h264" | "hevc" | "vp9" | "av1") {
+        return Err("Choose a supported Studio video codec.".to_string());
+    }
+    if container == "webm" && !matches!(video_codec, "vp9" | "av1") {
+        return Err("WebM output requires VP9 or AV1 video.".to_string());
+    }
+    let effort = option(&options.studio_preset, "balanced");
+    if !matches!(effort, "fast" | "balanced" | "quality") {
+        return Err("Choose a valid encoder effort.".to_string());
+    }
+    let crf = bounded_number(&options.studio_crf, "23", 0.0, 51.0, "constant quality")? as u8;
+    let speed = bounded_number(&options.studio_speed, "1", 0.5, 2.0, "playback speed")?;
+    let brightness = bounded_number(&options.studio_brightness, "0", -1.0, 1.0, "brightness")?;
+    let contrast = bounded_number(&options.studio_contrast, "1", 0.0, 2.0, "contrast")?;
+    let saturation = bounded_number(&options.studio_saturation, "1", 0.0, 3.0, "saturation")?;
+    let gain = bounded_number(&options.studio_audio_gain, "0", -24.0, 24.0, "audio gain")?;
+
+    let resolution = option(&options.studio_resolution, "original");
+    if !matches!(
+        resolution,
+        "original" | "3840x2160" | "1920x1080" | "1280x720" | "854x480" | "1080x1920" | "1080x1080"
+    ) {
+        return Err("Choose a supported Studio resolution.".to_string());
+    }
+    let frame_rate = option(&options.studio_frame_rate, "source");
+    if !matches!(frame_rate, "source" | "24" | "25" | "30" | "50" | "60") {
+        return Err("Choose a supported Studio frame rate.".to_string());
+    }
+    let denoise = option(&options.studio_denoise, "off");
+    if !matches!(denoise, "off" | "light" | "strong") {
+        return Err("Choose a valid noise reduction level.".to_string());
+    }
+    let audio_codec = option(&options.studio_audio_codec, "aac");
+    if !matches!(audio_codec, "aac" | "opus" | "copy" | "mute") {
+        return Err("Choose a supported Studio audio mode.".to_string());
+    }
+    if container == "webm" && audio_codec == "aac" {
+        return Err("WebM output requires Opus, copied compatible audio, or no audio.".to_string());
+    }
+    let sample_rate = option(&options.studio_sample_rate, "source");
+    if !matches!(sample_rate, "source" | "44100" | "48000" | "96000") {
+        return Err("Choose a supported audio sample rate.".to_string());
+    }
+    let channels = option(&options.studio_channels, "source");
+    if !matches!(channels, "source" | "1" | "2") {
+        return Err("Choose mono, stereo, or the source channel layout.".to_string());
+    }
+    if audio_codec == "copy"
+        && ((speed - 1.0).abs() > 0.001
+            || options.studio_normalize == Some(true)
+            || gain.abs() > 0.001)
+    {
+        return Err("Copied audio cannot use speed, loudness, or gain filters.".to_string());
+    }
+
+    args.extend(["-i".into(), input.into(), "-map".into(), "0:v:0".into()]);
+    let has_audio = request.input_has_audio.unwrap_or(true);
+    if has_audio && audio_codec != "mute" {
+        args.extend(["-map".into(), "0:a:0".into()]);
+    }
+
+    let mut video_filters = Vec::new();
+    if options.studio_deinterlace == Some(true) {
+        video_filters.push("yadif=mode=send_frame:parity=auto:deint=all".to_string());
+    }
+    match denoise {
+        "light" => video_filters.push("hqdn3d=1.5:1.5:6:6".to_string()),
+        "strong" => video_filters.push("hqdn3d=4:3:6:4.5".to_string()),
+        _ => {}
+    }
+    if (brightness.abs() > 0.001)
+        || ((contrast - 1.0).abs() > 0.001)
+        || ((saturation - 1.0).abs() > 0.001)
+    {
+        video_filters.push(format!(
+            "eq=brightness={brightness:.3}:contrast={contrast:.3}:saturation={saturation:.3}"
+        ));
+    }
+    if options.studio_sharpen == Some(true) {
+        video_filters.push("unsharp=5:5:0.8:3:3:0.4".to_string());
+    }
+    if resolution != "original" {
+        let (width, height) = parse_resolution(resolution);
+        video_filters.push(format!(
+            "scale={width}:{height}:force_original_aspect_ratio=decrease:force_divisible_by=2,pad={width}:{height}:(ow-iw)/2:(oh-ih)/2"
+        ));
+    }
+    if frame_rate != "source" {
+        video_filters.push(format!("fps={frame_rate}"));
+    }
+    if (speed - 1.0).abs() > 0.001 {
+        video_filters.push(format!("setpts=PTS/{speed:.6}"));
+    }
+    video_filters.push("format=yuv420p".to_string());
+    args.extend(["-vf".into(), video_filters.join(",")]);
+
+    match video_codec {
+        "h264" => add_studio_h264_encoding(args, options, crf, effort),
+        "hevc" => args.extend([
+            "-c:v".into(),
+            "libx265".into(),
+            "-preset".into(),
+            match effort {
+                "fast" => "fast",
+                "quality" => "slow",
+                _ => "medium",
+            }
+            .into(),
+            "-crf".into(),
+            crf.to_string(),
+        ]),
+        "vp9" => args.extend([
+            "-c:v".into(),
+            "libvpx-vp9".into(),
+            "-crf".into(),
+            crf.to_string(),
+            "-b:v".into(),
+            "0".into(),
+            "-row-mt".into(),
+            "1".into(),
+            "-cpu-used".into(),
+            match effort {
+                "fast" => "6",
+                "quality" => "2",
+                _ => "4",
+            }
+            .into(),
+        ]),
+        _ => args.extend([
+            "-c:v".into(),
+            "libaom-av1".into(),
+            "-cpu-used".into(),
+            match effort {
+                "fast" => "8",
+                "quality" => "4",
+                _ => "6",
+            }
+            .into(),
+            "-crf".into(),
+            crf.to_string(),
+            "-b:v".into(),
+            "0".into(),
+            "-row-mt".into(),
+            "1".into(),
+        ]),
+    }
+
+    if !has_audio || audio_codec == "mute" {
+        args.push("-an".into());
+    } else if audio_codec == "copy" {
+        args.extend(["-c:a".into(), "copy".into()]);
+    } else {
+        let mut audio_filters = Vec::new();
+        if (speed - 1.0).abs() > 0.001 {
+            audio_filters.push(format!("atempo={speed:.6}"));
+        }
+        if options.studio_normalize == Some(true) {
+            audio_filters.push("loudnorm=I=-16:TP=-1.5:LRA=11".to_string());
+        }
+        if gain.abs() > 0.001 {
+            audio_filters.push(format!("volume={gain:.3}dB"));
+        }
+        if !audio_filters.is_empty() {
+            args.extend(["-af".into(), audio_filters.join(",")]);
+        }
+        args.extend([
+            "-c:a".into(),
+            if audio_codec == "opus" {
+                "libopus"
+            } else {
+                "aac"
+            }
+            .into(),
+            "-b:a".into(),
+            if audio_codec == "opus" {
+                "160k"
+            } else {
+                "192k"
+            }
+            .into(),
+        ]);
+        match sample_rate {
+            "source" => {}
+            value @ ("44100" | "48000" | "96000") => {
+                args.extend(["-ar".into(), value.into()]);
+            }
+            _ => return Err("Choose a supported audio sample rate.".to_string()),
+        }
+        match channels {
+            "source" => {}
+            value @ ("1" | "2") => args.extend(["-ac".into(), value.into()]),
+            _ => return Err("Choose mono, stereo, or the source channel layout.".to_string()),
+        }
+    }
+    if container == "mp4" && options.studio_fast_start != Some(false) {
+        args.extend(["-movflags".into(), "+faststart".into()]);
+    }
+    Ok(())
 }
 
 fn escaped_filter_path(path: &str) -> String {
@@ -638,6 +928,9 @@ pub(crate) fn build_job_args(
             add_h264_encoding(&mut args, &request.options);
             args.extend(["-c:a".into(), "aac".into()]);
         }
+        "studio" => {
+            add_studio_args(&mut args, request, input)?;
+        }
         "gif" => {
             args.extend([
                 "-i".into(),
@@ -648,7 +941,7 @@ pub(crate) fn build_job_args(
                 "0".into(),
             ]);
         }
-        _ => return Err("This tool is not available in the beta yet.".to_string()),
+        _ => return Err("This tool is not available in this release.".to_string()),
     }
 
     if request.options.keep_metadata == Some(false) {
@@ -675,6 +968,7 @@ mod tests {
             input_paths: vec!["input.mp4".to_string()],
             output_dir: None,
             duration_seconds: Some(10.0),
+            input_has_audio: Some(true),
             merge_inputs: Vec::new(),
             options: JobOptions::default(),
         }
@@ -697,6 +991,10 @@ mod tests {
         let mut cover = request("thumbnail");
         cover.options.thumbnail_action = Some("add-cover".to_string());
         assert_eq!(output_extension(&cover), "mp4");
+
+        let mut studio = request("studio");
+        studio.options.studio_container = Some("webm".to_string());
+        assert_eq!(output_extension(&studio), "webm");
     }
 
     #[test]
@@ -794,6 +1092,85 @@ mod tests {
         let filter = &args[args.iter().position(|value| value == "-vf").unwrap() + 1];
         assert!(filter.starts_with("crop=640:360:20:10,rotate=15.000000*PI/180"));
         assert!(filter.contains(",pad=ceil(iw/2)*2:ceil(ih/2)*2,hflip"));
+        let _ = fs::remove_file(input);
+    }
+
+    #[test]
+    fn studio_builds_validated_video_and_audio_filter_chains() {
+        let input = std::env::temp_dir().join("frameharbor-job-args-studio.mp4");
+        fs::write(&input, b"test").unwrap();
+        let mut job = request("studio");
+        job.input_paths = vec![input.display().to_string()];
+        job.options.studio_video_codec = Some("hevc".to_string());
+        job.options.studio_resolution = Some("1280x720".to_string());
+        job.options.studio_frame_rate = Some("30".to_string());
+        job.options.studio_speed = Some("1.25".to_string());
+        job.options.studio_denoise = Some("light".to_string());
+        job.options.studio_sharpen = Some(true);
+        job.options.studio_brightness = Some("0.1".to_string());
+        job.options.studio_normalize = Some(true);
+        job.options.studio_audio_gain = Some("3".to_string());
+        job.options.studio_sample_rate = Some("48000".to_string());
+        job.options.studio_channels = Some("2".to_string());
+
+        let (args, _) = build_job_args(&job, &input.with_file_name("studio-out.mp4")).unwrap();
+        let video_filter = &args[args.iter().position(|value| value == "-vf").unwrap() + 1];
+        let audio_filter = &args[args.iter().position(|value| value == "-af").unwrap() + 1];
+        assert!(video_filter.contains("hqdn3d=1.5:1.5:6:6"));
+        assert!(video_filter.contains("eq=brightness=0.100"));
+        assert!(video_filter.contains("unsharp=5:5:0.8"));
+        assert!(video_filter.contains("scale=1280:720"));
+        assert!(video_filter.contains("fps=30"));
+        assert!(video_filter.contains("setpts=PTS/1.250000"));
+        assert_eq!(
+            audio_filter,
+            "atempo=1.250000,loudnorm=I=-16:TP=-1.5:LRA=11,volume=3.000dB"
+        );
+        assert!(args.windows(2).any(|pair| pair == ["-c:v", "libx265"]));
+        assert!(args.windows(2).any(|pair| pair == ["-ar", "48000"]));
+        assert!(args.windows(2).any(|pair| pair == ["-ac", "2"]));
+        let _ = fs::remove_file(input);
+    }
+
+    #[test]
+    fn studio_omits_audio_filters_for_silent_video() {
+        let input = std::env::temp_dir().join("frameharbor-job-args-studio-silent.mp4");
+        fs::write(&input, b"test").unwrap();
+        let mut job = request("studio");
+        job.input_paths = vec![input.display().to_string()];
+        job.input_has_audio = Some(false);
+        job.options.studio_normalize = Some(true);
+        let (args, _) = build_job_args(&job, &input.with_file_name("silent-out.mp4")).unwrap();
+        assert!(!args.iter().any(|value| value == "-af"));
+        assert!(args.iter().any(|value| value == "-an"));
+        let _ = fs::remove_file(input);
+    }
+
+    #[test]
+    fn studio_rejects_incompatible_webm_codecs() {
+        let input = std::env::temp_dir().join("frameharbor-job-args-studio-webm.mp4");
+        fs::write(&input, b"test").unwrap();
+        let mut job = request("studio");
+        job.input_paths = vec![input.display().to_string()];
+        job.options.studio_container = Some("webm".to_string());
+        job.options.studio_video_codec = Some("h264".to_string());
+        let error = build_job_args(&job, &input.with_file_name("bad.webm")).unwrap_err();
+        assert_eq!(error, "WebM output requires VP9 or AV1 video.");
+        let _ = fs::remove_file(input);
+    }
+
+    #[test]
+    fn studio_av1_uses_the_bundled_libaom_encoder() {
+        let input = std::env::temp_dir().join("frameharbor-job-args-studio-av1.mp4");
+        fs::write(&input, b"test").unwrap();
+        let mut job = request("studio");
+        job.input_paths = vec![input.display().to_string()];
+        job.options.studio_container = Some("webm".to_string());
+        job.options.studio_video_codec = Some("av1".to_string());
+        job.options.studio_audio_codec = Some("opus".to_string());
+        let (args, _) = build_job_args(&job, &input.with_file_name("studio-av1.webm")).unwrap();
+        assert!(args.windows(2).any(|pair| pair == ["-c:v", "libaom-av1"]));
+        assert!(args.windows(2).any(|pair| pair == ["-row-mt", "1"]));
         let _ = fs::remove_file(input);
     }
 }

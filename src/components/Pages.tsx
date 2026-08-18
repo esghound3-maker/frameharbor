@@ -226,30 +226,6 @@ export function InspectorPage({
   );
 }
 
-export function StudioPage({ onBack }: { onBack: () => void }) {
-  return (
-    <div className="content-page studio-page">
-      <section className="studio-stage">
-        <div className="studio-grid" />
-        <span className="coming-badge"><Icon name="sparkles" size={14} /> Post-beta</span>
-        <div className="studio-message">
-          <span className="large-node-icon"><Icon name="nodes" size={30} /></span>
-          <h2>Visual workflows are taking shape</h2>
-          <p>Studio will connect sources, filters, and exports as reusable FFmpeg pipelines. The beta stays focused on dependable everyday tools.</p>
-          <button className="primary-button" onClick={onBack}>Back to Simple mode</button>
-        </div>
-        <div className="node-preview node-source"><i /><span>Source</span><strong>Video input</strong></div>
-        <div className="node-preview node-filter"><i /><span>Filter</span><strong>Resize 1080p</strong></div>
-        <div className="node-preview node-export"><i /><span>Export</span><strong>Universal MP4</strong></div>
-        <svg className="node-lines" viewBox="0 0 900 460" preserveAspectRatio="none" aria-hidden="true">
-          <path d="M105 302 C230 302 190 378 350 378" />
-          <path d="M510 378 C680 378 630 292 795 292" />
-        </svg>
-      </section>
-    </div>
-  );
-}
-
 export function SettingsPage({
   settings,
   environment,

@@ -76,6 +76,7 @@ try {
         subtitles = Join-Path $runRoot 'subtitled.mp4'
         watermark = Join-Path $runRoot 'watermarked.mp4'
         gif = Join-Path $runRoot 'clip.gif'
+        studio = Join-Path $runRoot 'studio.mp4'
     }
 
     Invoke-FfmpegStep 'compress' @(
@@ -118,6 +119,14 @@ try {
         '-i', $inputOne,
         '-vf', 'fps=12,scale=360:-1:flags=lanczos,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse',
         '-loop', '0', $outputs.gif
+    )
+    Invoke-FfmpegStep 'advanced Studio' @(
+        '-i', $inputOne, '-map', '0:v:0', '-map', '0:a:0',
+        '-vf', 'hqdn3d=1.5:1.5:6:6,eq=brightness=0.05:contrast=1.05:saturation=1.1,unsharp=5:5:0.8:3:3:0.4,scale=1280:720:force_original_aspect_ratio=decrease:force_divisible_by=2,pad=1280:720:(ow-iw)/2:(oh-ih)/2,fps=30,setpts=PTS/1.25,format=yuv420p',
+        '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '23',
+        '-af', 'atempo=1.25,loudnorm=I=-16:TP=-1.5:LRA=11,volume=1dB',
+        '-c:a', 'aac', '-b:a', '192k', '-ar', '48000', '-ac', '2',
+        '-movflags', '+faststart', $outputs.studio
     )
 
     $results = foreach ($entry in $outputs.GetEnumerator()) {
